@@ -39,7 +39,7 @@ abstract class Controller
     }
 
     /**
-     * 생성 완료 응답 반환
+     * 201 Created 응답 반환
      * @param mixed $data
      * @param string $message
      * @return JsonResponse
@@ -50,7 +50,7 @@ abstract class Controller
     }
     
     /**
-     * 내용 없음 응답 반환
+     * 204 No Content 응답 반환
      * @return JsonResponse
      */
     protected function noContent(): JsonResponse
