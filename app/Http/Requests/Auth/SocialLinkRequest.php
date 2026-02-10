@@ -4,7 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginRequest extends FormRequest
+class SocialLinkRequest extends FormRequest
 {
     /**
      * 인가 확인
@@ -24,8 +24,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'access_token' => ['required', 'string'],
         ];
     }
 
@@ -37,9 +36,7 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => '이메일을 입력해주세요.',
-            'email.email' => '올바른 이메일 형식이 아닙니다.',
-            'password.required' => '비밀번호를 입력해주세요.',
+            'access_token.required' => 'OAuth access_token을 전달해주세요.',
         ];
     }
 }
