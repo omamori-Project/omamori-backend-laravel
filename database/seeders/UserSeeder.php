@@ -13,7 +13,6 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'email' => 'admin@omamori.com',
-                'password_hash' => Hash::make('password'),
                 'name' => '관리자',
                 'role' => 'admin',
                 'is_active' => true,
@@ -23,7 +22,6 @@ class UserSeeder extends Seeder
             ],
             [
                 'email' => 'jungmin@omamori.com',
-                'password_hash' => Hash::make('password'),
                 'name' => '정민',
                 'role' => 'user',
                 'is_active' => true,
@@ -33,7 +31,6 @@ class UserSeeder extends Seeder
             ],
             [
                 'email' => 'user1@example.com',
-                'password_hash' => Hash::make('password'),
                 'name' => '사용자1',
                 'role' => 'user',
                 'is_active' => true,
@@ -43,7 +40,6 @@ class UserSeeder extends Seeder
             ],
             [
                 'email' => 'user2@example.com',
-                'password_hash' => Hash::make('password'),
                 'name' => '사용자2',
                 'role' => 'user',
                 'is_active' => true,
@@ -65,7 +61,6 @@ class UserSeeder extends Seeder
                 'provider' => 'local',
                 'provider_user_id' => $user['email'],
                 'email' => $user['email'],
-                'password_hash' => $user['password_hash'],
                 'profile' => json_encode([
                     'name' => $user['name'],
                 ]),
