@@ -16,10 +16,6 @@ return new class extends Migration
                 ->unique()
                 ->comment('로그인 이메일 (OAuth 포함)');
 
-            $table->string('password_hash', 255)
-                ->nullable()
-                ->comment('비밀번호 해시 (OAuth-only 계정은 null)');
-
             $table->string('name', 100)
                 ->comment('표시 이름');
 
