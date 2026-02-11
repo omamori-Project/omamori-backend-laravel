@@ -8,7 +8,6 @@ use App\Http\Requests\Omamori\StoreOmamoriRequest;
 use App\Http\Requests\Omamori\UpdateOmamoriRequest;
 use App\Http\Requests\Omamori\UpdateBackMessageRequest;
 use App\Http\Resources\Omamori\OmamoriResource;
-use App\Http\Resources\Omamori\OmamoriCollection;
 use App\Services\Omamori\OmamoriService;
 use App\Models\Omamori;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +26,7 @@ class OmamoriController extends Controller
      * GET /api/v1/omamoris?status={status}&page={page}&size={size}&sort={sort}
      *
      * @param IndexOmamoriRequest $request
-     * @return OmamoriCollection
+     * @return JsonResponse
      */
     public function index(IndexOmamoriRequest $request): JsonResponse
     {
@@ -35,16 +34,8 @@ class OmamoriController extends Controller
             $request->user()->id,
             $request->validated()
         );
-    
-        return response()->json([
-            'data' => OmamoriResource::collection($paginator->items()),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
-            ],
-        ]);
+
+        return $this->paginated($paginator, OmamoriResource::class);
     }
     
 

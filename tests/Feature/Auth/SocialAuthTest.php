@@ -217,7 +217,11 @@ class SocialAuthTest extends TestCase
             'access_token' => 'mock-access-token',
         ]);
 
-        $response->assertStatus(500);
+        $response->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => '이 소셜 계정은 이미 다른 계정에 연결되어 있습니다.',
+            ]);
     }
 
     /**
@@ -240,7 +244,11 @@ class SocialAuthTest extends TestCase
             'access_token' => 'mock-access-token',
         ]);
 
-        $response->assertStatus(500);
+        $response->assertStatus(409)
+            ->assertJson([
+                'success' => false,
+                'message' => '이미 연결된 소셜 계정입니다.',
+            ]);
     }
 
     /**
@@ -310,7 +318,11 @@ class SocialAuthTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/auth/google/unlink');
 
-        $response->assertStatus(500);
+        $response->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'message' => '최소 1개의 로그인 수단이 필요합니다.',
+            ]);
     }
 
     /**
@@ -327,7 +339,11 @@ class SocialAuthTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/auth/google/unlink');
 
-        $response->assertStatus(500);
+        $response->assertStatus(404)
+            ->assertJson([
+                'success' => false,
+                'message' => '연결된 계정을 찾을 수 없습니다.',
+            ]);
     }
 
     /**
