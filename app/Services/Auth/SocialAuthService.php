@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Exceptions\BusinessException;
 use App\Models\User;
 use App\Models\UserIdentity;
 use App\Repositories\Auth\AuthRepository;
@@ -91,7 +92,7 @@ class SocialAuthService extends BaseService
      * @param string $provider
      * @param string $accessToken
      * @return UserIdentity
-     * @throws \Exception
+     * @throws BusinessException
      */
     public function link(User $user, string $provider, string $accessToken): UserIdentity
     {
@@ -105,7 +106,7 @@ class SocialAuthService extends BaseService
         );
 
         if ($existing) {
-            throw new \Exception('이 소셜 계정은 이미 다른 계정에 연결되어 있습니다.');
+            throw new BusinessException('이 소셜 계정은 이미 다른 계정에 연결되어 있습니다.', 409);
         }
 
         $myIdentity = $this->socialAuthRepository->findUserIdentity(
@@ -114,7 +115,7 @@ class SocialAuthService extends BaseService
         );
 
         if ($myIdentity) {
-            throw new \Exception('이미 연결된 소셜 계정입니다.');
+            throw new BusinessException('이미 연결된 소셜 계정입니다.', 409);
         }
 
         return $this->socialAuthRepository->createIdentity($user, [
@@ -135,7 +136,7 @@ class SocialAuthService extends BaseService
      * @param User $user
      * @param string $provider
      * @return void
-     * @throws \Exception
+     * @throws BusinessException
      */
     public function disconnect(User $user, string $provider): void
     {
@@ -145,13 +146,13 @@ class SocialAuthService extends BaseService
         );
 
         if (!$identity) {
-            throw new \Exception('연결된 계정을 찾을 수 없습니다.');
+            throw new BusinessException('연결된 계정을 찾을 수 없습니다.', 404);
         }
 
         $activeCount = $this->socialAuthRepository->countActiveIdentities($user->id);
 
         if ($activeCount <= 1) {
-            throw new \Exception('최소 1개의 로그인 수단이 필요합니다.');
+            throw new BusinessException('최소 1개의 로그인 수단이 필요합니다.', 422);
         }
 
         $this->socialAuthRepository->revokeIdentity($identity);
