@@ -4,29 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Share extends Model
 {
-    use HasFactory;
-    public $timestamps = false;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'omamori_id',
-        'share_code',
-        'is_public',
+        'user_id',
+        'token',
+        'is_active',
         'view_count',
         'expires_at',
-        'revoked_at',
     ];
 
     protected $casts = [
-        'is_public' => 'boolean',
+        'is_active'  => 'boolean',
         'expires_at' => 'datetime',
-        'revoked_at' => 'datetime',
     ];
 
     public function omamori()
     {
         return $this->belongsTo(Omamori::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

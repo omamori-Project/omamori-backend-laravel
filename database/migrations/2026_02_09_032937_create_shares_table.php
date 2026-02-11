@@ -11,22 +11,28 @@ return new class extends Migration
     {
         Schema::create('shares', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('공유 PK');
-        
+
             $table->unsignedBigInteger('omamori_id')->comment('공유 대상 오마모리');
-        
-            $table->string('share_code', 32)->unique()->comment('공유 코드');
-            $table->boolean('is_public')->default(true)->comment('공개 여부');
+            $table->unsignedBigInteger('user_id')->comment('공유 생성자');
+
+            $table->uuid('token')->unique()->comment('공유 토큰(UUID)');
+            $table->boolean('is_active')->default(true)->comment('공유 활성 여부');
             $table->integer('view_count')->default(0)->comment('공유 조회수');
-        
+
             $table->timestampTz('expires_at')->nullable()->comment('만료 시각');
-            $table->timestampTz('created_at')->useCurrent()->comment('생성 시각');
-            $table->timestampTz('revoked_at')->nullable()->comment('회수 시각');
-        
+
+            $table->timestampsTz();
+            $table->softDeletesTz();
+
             $table->foreign('omamori_id')->references('id')->on('omamoris')->cascadeOnDelete();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+
+            $table->index('omamori_id', 'idx_shares_omamori');
+            $table->index('token', 'idx_shares_token');
+            $table->index('expires_at', 'idx_shares_expires_at');
         });
-        
+
         DB::statement("comment on table shares is '오마모리 공유 링크'");
-        
     }
 
     public function down(): void
