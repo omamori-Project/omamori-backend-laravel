@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
          */
         Route::prefix('omamoris')->group(function () {
 
-            // Phase 1: 기본 CRUD
+            // 기본 CRUD
             Route::post('/', [OmamoriController::class, 'store']);
             Route::get('/', [OmamoriController::class, 'index']);
             Route::get('/{omamori}', [OmamoriController::class, 'show']);
@@ -52,13 +52,16 @@ Route::prefix('v1')->group(function () {
             Route::patch('/{omamori}/back-message', [OmamoriController::class, 'updateBackMessage']);
             Route::delete('/{omamori}', [OmamoriController::class, 'destroy']);
 
-            // Phase 2: Elements (부모-자식 바인딩 강제)
+            // Elements (부모-자식 바인딩 강제)
             Route::scopeBindings()->group(function () {
                 Route::post('/{omamori}/elements', [OmamoriElementController::class, 'store']);
                 Route::patch('/{omamori}/elements/{element}', [OmamoriElementController::class, 'update']);
                 Route::delete('/{omamori}/elements/{element}', [OmamoriElementController::class, 'destroy']);
-                Route::post('/{omamori}/elements/reorder', [OmamoriElementController::class, 'reorder']);
+                Route::post('/{omamori}/elements/reorder', [OmamoriElementController::class, 'reorder']);   
             });
+
+            Route::post('/{omamori}/save-draft', [OmamoriController::class, 'saveDraft']);
+            Route::post('/{omamori}/publish', [OmamoriController::class, 'publish']);
         });
     });
 });

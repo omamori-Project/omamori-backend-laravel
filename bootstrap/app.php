@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,8 +14,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->statefulApi();
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
+
+    ->withExceptions(function ($exceptions) {
+
+    $exceptions->render(function (ValidationException $e, Request $request) {
+        if (! $request->expectsJson()) {
+            return null;
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed.',
+            'errors'  => $e->errors(),
+        ], 422);
+    });
+
     })->create();

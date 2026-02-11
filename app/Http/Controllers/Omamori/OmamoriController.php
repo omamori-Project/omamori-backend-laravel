@@ -136,4 +136,37 @@ class OmamoriController extends Controller
 
         return $this->success(null, '오마모리가 삭제되었습니다.');
     }
+
+    /**
+     * 오마모리를 임시 저장(draft) 상태로 유지
+     * POST /api/v1/omamoris/{omamoriId}/save-draft
+     *
+     * @param  Omamori  $omamori
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function saveDraft(Omamori $omamori)
+    {
+        $this->authorize('update', $omamori);
+    
+        $updated = $this->omamoriService->saveDraft($omamori);
+    
+        return $this->success(new OmamoriResource($updated), 'Draft saved.');
+    }
+    
+    /**
+     * 오마모리를 최종 발행(published) 상태로 전환
+     * POST /api/v1/omamoris/{omamoriId}/publish
+     *
+     * @param  Omamori  $omamori
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function publish(Omamori $omamori)
+    {
+        $this->authorize('update', $omamori);
+    
+        $published = $this->omamoriService->publish($omamori);
+    
+        return $this->success(new OmamoriResource($published), 'Published.');
+    }
+
 }

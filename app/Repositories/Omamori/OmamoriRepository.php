@@ -3,6 +3,7 @@
 namespace App\Repositories\Omamori;
 
 use App\Models\Omamori;
+use App\Models\OmamoriElement;
 use App\Repositories\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -104,5 +105,55 @@ class OmamoriRepository extends BaseRepository
         $this->update($omamori, ['back_message' => $message]);
 
         return $omamori;
+    }
+    /**
+     * 오마모리 상태를 draft로 변경
+     * - status를 draft로 설정
+     * - published_at을 null로 초기화
+     *
+     * @param  Omamori  $omamori
+     * @return Omamori  변경된 최신 상태의 오마모리
+     */
+    public function setStatusDraft(Omamori $omamori): Omamori
+    {
+        $omamori->update([
+            'status' => Omamori::STATUS_DRAFT,
+            'published_at' => null,
+        ]);
+
+        return $omamori->fresh();
+    }
+
+    /**
+     * 오마모리 상태를 published로 변경
+     * - status를 published로 설정
+     * - published_at에 현재 시각을 기록
+     *
+     * @param  Omamori  $omamori
+     * @return Omamori  변경된 최신 상태의 오마모리
+     */
+    public function setStatusPublished(Omamori $omamori): Omamori
+    {
+        $omamori->update([
+            'status' => Omamori::STATUS_PUBLISHED,
+            'published_at' => now(),
+        ]);
+
+        return $omamori->fresh();
+    }
+
+    /**
+     * background를 제외한 요소 개수를 반환
+     * publish 가능 여부 검증 시 사용
+     *
+     * @param  int  $omamoriId
+     * @return int  non-background 요소 개수
+     */
+    public function countNonBackgroundElements(int $omamoriId): int
+    {
+        return OmamoriElement::query()
+            ->where('omamori_id', $omamoriId)
+            ->where('type', '!=', 'background')
+            ->count();
     }
 }

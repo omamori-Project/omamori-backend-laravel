@@ -10,6 +10,9 @@ class Omamori extends Model
 {
     use SoftDeletes;
     use HasFactory;
+    
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PUBLISHED = 'published';
 
     protected $fillable = [
         'user_id',
