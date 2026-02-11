@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 abstract class Controller
 {
+    use AuthorizesRequests;
+    
     /**
      * 성공 응답 반환
      * @param mixed $data

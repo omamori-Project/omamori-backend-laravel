@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Omamori\OmamoriController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -30,5 +31,15 @@ Route::prefix('v1')->group(function () {
         Route::patch('/me', [MeController::class, 'update']);
         Route::delete('/me', [MeController::class, 'destroy']);
         Route::get('/me/identities', [MeController::class, 'identities']);
+
+        // 오마모리 제작 
+        Route::prefix('omamoris')->group(function () {
+            Route::post('/', [OmamoriController::class, 'store']);
+            Route::get('/', [OmamoriController::class, 'index']); 
+            Route::get('/{omamori}', [OmamoriController::class, 'show']);
+            Route::patch('/{omamori}', [OmamoriController::class, 'update']);
+            Route::patch('/{omamori}/back-message', [OmamoriController::class, 'updateBackMessage']);
+            Route::delete('/{omamori}', [OmamoriController::class, 'destroy']);
+        });        
     });
 });
