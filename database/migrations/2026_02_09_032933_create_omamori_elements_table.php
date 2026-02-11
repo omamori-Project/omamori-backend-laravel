@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('layer')->default(0)->comment('레이어 순서');
         
             $table->jsonb('props')->comment('요소 속성');
-            $table->jsonb('transform')->comment('위치/회전/스케일 정보');
+            $table->jsonb('transform')->nullable()->comment('위치/회전/스케일 정보');
         
             $table->timestampTz('created_at')->useCurrent()->comment('생성 시각');
             $table->timestampTz('updated_at')->useCurrent()->comment('수정 시각');

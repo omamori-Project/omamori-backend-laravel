@@ -37,7 +37,9 @@ class Omamori extends Model
 
     public function elements()
     {
-        return $this->hasMany(OmamoriElement::class);
+        return $this->hasMany(OmamoriElement::class)
+        ->orderBy('layer')
+        ->orderBy('id');
     }
 
     public function fortuneColor()
