@@ -13,6 +13,7 @@ use App\Http\Controllers\Omamori\ShareController;
 use App\Http\Controllers\Public\PublicShareController;
 use App\Http\Controllers\Omamori\OmamoriExportController;
 use App\Http\Controllers\Omamori\OmamoriDuplicateController;
+use App\Http\Controllers\Community\CommentController;
 
 use App\Http\Controllers\Community\PostController;
 
@@ -39,10 +40,12 @@ Route::prefix('v1')->group(function () {
      *
      * - GET /api/v1/posts        : 피드 목록(공개)
      * - GET /api/v1/posts/{postId} : 게시글 상세(공개)
+     * - GET /api/v1/posts/{postId}/comments : 게시글 댓글 목록(공개)
      */
     Route::prefix('posts')->group(function () {
         Route::get('/', [PostController::class, 'index']); 
         Route::get('/{postId}', [PostController::class, 'show']); 
+        Route::get('/{postId}/comments', [CommentController::class, 'index']);
     });
 
     /**
@@ -112,20 +115,43 @@ Route::prefix('v1')->group(function () {
         /**
          * Community (Private)
          *
-         * - POST   /api/v1/posts              : 게시글 작성
-         * - PATCH  /api/v1/posts/{postId}       : 게시글 수정 (owner)
-         * - DELETE /api/v1/posts/{postId}       : 게시글 삭제 (owner, soft delete)
-         * - GET    /api/v1/me/posts           : 내 게시글 목록
-         * - GET    /api/v1/users/{userId}/posts : 특정 유저 게시글 목록(로그인 필요 버전)
-         *
+         * - POST   /api/v1/posts                    : 게시글 작성
+         * - PATCH  /api/v1/posts/{postId}           : 게시글 수정 (owner 또는 admin)
+         * - DELETE /api/v1/posts/{postId}           : 게시글 삭제 (owner 또는 admin, soft delete)
+         * - GET    /api/v1/me/posts                 : 내 게시글 목록
+         * - GET    /api/v1/users/{userId}/posts     : 특정 유저 게시글 목록(로그인 필요 버전)
+         * - POST   /api/v1/posts/{postId}/comments  : 게시글 댓글 작성
          */
         Route::prefix('posts')->group(function () {
             Route::post('/', [PostController::class, 'store']);
             Route::patch('/{postId}', [PostController::class, 'update']);
             Route::delete('/{postId}', [PostController::class, 'destroy']);
+            Route::post('/{postId}/comments', [CommentController::class, 'store']);
         });
-
+        
         Route::get('/me/posts', [PostController::class, 'myIndex']);
         Route::get('/users/{userId}/posts', [PostController::class, 'userIndex']);
+        
+        /**
+         * Community (Private) - Comments
+         *
+         * - POST   /api/v1/comments/{commentId}/replies : 답글 작성
+         * - PATCH  /api/v1/comments/{commentId}         : 댓글/답글 수정 (owner 또는 admin)
+         * - DELETE /api/v1/comments/{commentId}         : 댓글/답글 삭제 (owner 또는 admin)
+         */
+        Route::prefix('comments')->group(function () {
+            Route::post('/{commentId}/replies', [CommentController::class, 'storeReply']);
+            Route::patch('/{commentId}', [CommentController::class, 'update']);
+            Route::delete('/{commentId}', [CommentController::class, 'destroy']);
+        });
+        
+        /**
+         * Community (Private) - Me
+         *
+         * - GET /api/v1/me/comments : 내 댓글/답글 목록
+         */
+        Route::prefix('me')->group(function () {
+            Route::get('/comments', [CommentController::class, 'myIndex']);
+        });
     });
 });
