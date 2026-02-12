@@ -14,6 +14,8 @@ use App\Http\Controllers\Public\PublicShareController;
 use App\Http\Controllers\Omamori\OmamoriExportController;
 use App\Http\Controllers\Omamori\OmamoriDuplicateController;
 
+use App\Http\Controllers\Community\PostController;
+
 Route::prefix('v1')->group(function () {
 
     /**
@@ -25,11 +27,22 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/google', [SocialAuthController::class, 'redirect']);
         Route::get('/google/callback', [SocialAuthController::class, 'callback']);
-    });
+    });    
 
     Route::prefix('public')->group(function () {
         Route::get('/shares/{token}', [PublicShareController::class, 'show']);
         Route::get('/shares/{token}/preview', [PublicShareController::class, 'preview']);        
+    });
+
+    /**
+     * Community (Public)
+     *
+     * - GET /api/v1/posts        : 피드 목록(공개)
+     * - GET /api/v1/posts/{postId} : 게시글 상세(공개)
+     */
+    Route::prefix('posts')->group(function () {
+        Route::get('/', [PostController::class, 'index']); 
+        Route::get('/{postId}', [PostController::class, 'show']); 
     });
 
     /**
@@ -90,10 +103,29 @@ Route::prefix('v1')->group(function () {
 
         /**
          * Share (공유 기준)
-         *  - PATCH  /api/v1/shares/{shareId}
-         *  - DELETE /api/v1/shares/{shareId}
+         *  - PATCH  /api/v1/shares/{shareId}   : 공유 설정 수정
+         *  - DELETE /api/v1/shares/{shareId}   : 공유 삭제
          */
         Route::patch('/shares/{shareId}', [ShareController::class, 'update']);
         Route::delete('/shares/{shareId}', [ShareController::class, 'destroy']);
+
+        /**
+         * Community (Private)
+         *
+         * - POST   /api/v1/posts              : 게시글 작성
+         * - PATCH  /api/v1/posts/{postId}       : 게시글 수정 (owner)
+         * - DELETE /api/v1/posts/{postId}       : 게시글 삭제 (owner, soft delete)
+         * - GET    /api/v1/me/posts           : 내 게시글 목록
+         * - GET    /api/v1/users/{userId}/posts : 특정 유저 게시글 목록(로그인 필요 버전)
+         *
+         */
+        Route::prefix('posts')->group(function () {
+            Route::post('/', [PostController::class, 'store']);
+            Route::patch('/{postId}', [PostController::class, 'update']);
+            Route::delete('/{postId}', [PostController::class, 'destroy']);
+        });
+
+        Route::get('/me/posts', [PostController::class, 'myIndex']);
+        Route::get('/users/{userId}/posts', [PostController::class, 'userIndex']);
     });
 });
