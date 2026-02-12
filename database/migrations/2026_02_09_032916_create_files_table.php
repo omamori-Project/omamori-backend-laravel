@@ -15,6 +15,11 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')
                 ->comment('파일 소유 유저');
 
+            // 어떤 오마모리에서 생성/소속된 파일인지 추적 (nullable)
+            $table->unsignedBigInteger('omamori_id')
+                ->nullable()
+                ->comment('연관 오마모리 (nullable)');
+
             $table->string('purpose', 30)
                 ->comment('파일 용도 (omamori_element | render_output | frame_asset | profile_image)');
 
@@ -53,11 +58,15 @@ return new class extends Migration
                 ->nullable()
                 ->comment('소프트 삭제 시각');
 
+            // FK
             $table->foreign('user_id')->references('id')->on('users');
+
+            // index (조회 최적화)
+            $table->index('omamori_id');
+            $table->index(['user_id', 'purpose']);
         });
 
         DB::statement("comment on table files is '업로드/생성 파일 메타데이터'");
-
     }
 
     public function down(): void

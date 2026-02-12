@@ -59,4 +59,16 @@ class Omamori extends Model
     {
         return $this->belongsTo(File::class, 'preview_file_id');
     }
+
+    public function files()
+    {
+        return $this->hasMany(\App\Models\File::class);
+    }
+
+    public function exportFiles()
+    {
+        return $this->hasMany(\App\Models\File::class)
+            ->where('purpose', 'render_output');
+    }
+
 }

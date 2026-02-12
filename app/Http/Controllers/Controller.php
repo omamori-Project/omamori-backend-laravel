@@ -100,10 +100,10 @@ abstract class Controller
      * 204 No Content 응답 반환
      * - body 없이 빈 응답
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    protected function noContent(): \Illuminate\Http\Response
+    protected function noContent(): JsonResponse
     {
-        return response()->noContent();
+        return response()->json(null, 204);
     }
 }
