@@ -15,6 +15,7 @@ class File extends Model
 
     protected $fillable = [
         'user_id',
+        'omamori_id',
         'purpose',
         'visibility',
         'file_key',
@@ -29,4 +30,10 @@ class File extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function omamori()
+    {
+        return $this->belongsTo(Omamori::class);
+    }
 }
+    
