@@ -149,33 +149,39 @@ class ShareService extends BaseService
      * - is_active = true
      * - expires_at이 있으면 만료 전
      * - 연결된 omamori가 published
+     * - 조회 성공 시 view_count 증가
      *
-    * @throws BusinessException
-    */
+     * @param string $token
+     * @return Share
+     *
+     * @throws BusinessException
+     */
     public function resolvePublic(string $token): Share
     {
         return $this->transaction(function () use ($token) {
-            $share = $this->shareRepository->findByToken($token);
-
-            if (!$share || !$share->is_active) {
+    
+            // 유효한 share 조회 
+            $share = $this->shareRepository->findActiveByToken($token);
+    
+            if (!$share) {
                 throw new BusinessException('공유 링크를 찾을 수 없습니다.', 404);
             }
-
-            if ($share->expires_at !== null && $share->expires_at->isPast()) {
-                throw new BusinessException('공유 링크를 찾을 수 없습니다.', 404);
-            }
-
+    
+            // 연관 오마모리 상태 확인
             $share->loadMissing(['omamori']);
-
+    
             if (!$share->omamori || $share->omamori->status !== 'published') {
                 throw new BusinessException('공유 링크를 찾을 수 없습니다.', 404);
             }
-
+    
+            // 조회수 증가 
             $this->shareRepository->incrementViewCount($share);
-
+    
             /** @var Share $fresh */
             $fresh = $this->shareRepository->findOrFail($share->id);
+    
             return $fresh;
         });
     }
+    
 }

@@ -94,4 +94,30 @@ class ShareRepository extends BaseRepository
     {
         $share->increment('view_count');
     }
+    
+    /**
+     * token 기준 "현재 유효한" 공유 1건 조회
+     * - soft delete 제외
+     * - is_active = true
+     * - expires_at null 또는 미래
+     *
+     * @param string $token
+     * @return Share|null
+     */
+    public function findActiveByToken(string $token): ?Share
+    {
+        /** @var Share|null $share */
+        $share = Share::query()
+            ->where('token', $token)
+            ->where('is_active', true)
+            ->whereNull('deleted_at')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+    
+        return $share;
+    }
+    
 }

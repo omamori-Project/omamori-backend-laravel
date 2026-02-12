@@ -8,6 +8,7 @@ use App\Http\Resources\Share\ShareResource;
 use App\Models\Share;
 use App\Services\Share\ShareService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 /**
  * Class ShareController
  *
@@ -44,9 +45,9 @@ class ShareController extends Controller
      * 공유 삭제(soft delete)
      *
      * @param int $shareId
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function destroy(int $shareId): \Illuminate\Http\Response
+    public function destroy(int $shareId): Response
     {
         $share = Share::query()->whereKey($shareId)->firstOrFail();
 
@@ -54,6 +55,6 @@ class ShareController extends Controller
 
         $this->shareService->deleteShare($share);
 
-        return $this->noContent();
+        return response()->noContent();
     }
 }
