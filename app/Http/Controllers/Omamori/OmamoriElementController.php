@@ -11,6 +11,7 @@ use App\Models\Omamori;
 use App\Models\OmamoriElement;
 use App\Services\Omamori\OmamoriElementService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 class OmamoriElementController extends Controller
 {
@@ -65,7 +66,7 @@ class OmamoriElementController extends Controller
      *
      * @param Omamori $omamori
      * @param OmamoriElement $element
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function destroy(Omamori $omamori, OmamoriElement $element)
     {
@@ -73,7 +74,7 @@ class OmamoriElementController extends Controller
 
         $this->service->destroy($omamori, $element);
 
-        return $this->noContent();
+        return response()->json(null, 204);
     }
 
     /**
@@ -81,7 +82,7 @@ class OmamoriElementController extends Controller
      *
      * @param ReorderElementsRequest $request
      * @param Omamori $omamori
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      * @throws ValidationException
      */
     public function reorder(ReorderElementsRequest $request, Omamori $omamori)
@@ -92,6 +93,6 @@ class OmamoriElementController extends Controller
 
         $this->service->reorder($omamori, $elementIds);
 
-        return $this->noContent();
+        return response()->json(null, 204);
     }
 }
