@@ -11,6 +11,8 @@ use App\Http\Controllers\Omamori\OmamoriElementController;
 use App\Http\Controllers\Omamori\OmamoriShareController;
 use App\Http\Controllers\Omamori\ShareController;
 use App\Http\Controllers\Public\PublicShareController;
+use App\Http\Controllers\Omamori\OmamoriExportController;
+use App\Http\Controllers\Omamori\OmamoriDuplicateController;
 
 Route::prefix('v1')->group(function () {
 
@@ -27,6 +29,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('public')->group(function () {
         Route::get('/shares/{token}', [PublicShareController::class, 'show']);
+        Route::get('/shares/{token}/preview', [PublicShareController::class, 'preview']);        
     });
 
     /**
@@ -77,6 +80,12 @@ Route::prefix('v1')->group(function () {
              */
             Route::post('/{omamori}/share', [OmamoriShareController::class, 'store']);
             Route::get('/{omamori}/shares', [OmamoriShareController::class, 'index']);
+
+            // 오마모리 내보내기 (다운로드 URL 반환)
+            Route::post('/{omamoriId}/export', [OmamoriExportController::class, 'export']);
+
+            // 오마모리 복제
+            Route::post('/{omamoriId}/duplicate', [OmamoriDuplicateController::class, 'duplicate']);            
         });
 
         /**
