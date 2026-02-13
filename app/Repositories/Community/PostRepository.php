@@ -7,6 +7,7 @@ use App\Repositories\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class PostRepository extends BaseRepository
 {
@@ -21,6 +22,18 @@ class PostRepository extends BaseRepository
     }
 
     /**
+     * 숨김 처리되지 않은 게시글 기본 쿼리
+     *
+     * @return Builder
+     */
+    public function baseVisibleQuery(): Builder
+    {
+        return $this->getModel()
+            ->query()
+            ->whereNull('hidden_at');
+    }
+
+    /**
      * 게시글 단건 조회 (연관관계 포함)
      *
      * @param int $postId
@@ -29,8 +42,7 @@ class PostRepository extends BaseRepository
     public function findWithRelations(int $postId): ?Post
     {
         /** @var Post|null $post */
-        $post = $this->getModel()
-            ->newQuery()
+        $post = $this->baseVisibleQuery()
             ->with(['user', 'omamori'])
             ->whereKey($postId)
             ->first();
@@ -46,8 +58,7 @@ class PostRepository extends BaseRepository
      */
     public function paginateFeed(array $filters): LengthAwarePaginator
     {
-        $query = $this->getModel()
-            ->newQuery()
+        $query = $this->baseVisibleQuery()
             ->with(['user']);
 
         $this->applySorting($query, $filters);
@@ -70,8 +81,7 @@ class PostRepository extends BaseRepository
      */
     public function paginateByUser(int $userId, array $filters): LengthAwarePaginator
     {
-        $query = $this->getModel()
-            ->newQuery()
+        $query = $this->baseVisibleQuery()
             ->with(['user'])
             ->where('user_id', $userId);
 
@@ -95,6 +105,21 @@ class PostRepository extends BaseRepository
     public function incrementViewCount(Post $post): void
     {
         $post->increment('view_count');
+    }
+
+    /**
+     * 특정 오마모리에 연결된 게시글 숨김 처리
+     *
+     * @param int $omamoriId
+     * @return int
+     */
+    public function hideByOmamoriId(int $omamoriId): int
+    {
+        return $this->getModel()
+            ->newQuery()
+            ->where('omamori_id', $omamoriId)
+            ->whereNull('hidden_at')
+            ->update(['hidden_at' => Carbon::now()]);
     }
 
     /**

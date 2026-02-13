@@ -2,6 +2,7 @@
 
 namespace App\Services\Community;
 
+use App\Models\Omamori;
 use App\Models\Post;
 use App\Models\User;
 use App\Repositories\Community\PostRepository;
@@ -9,6 +10,7 @@ use App\Services\BaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class PostService extends BaseService
 {
@@ -18,11 +20,20 @@ class PostService extends BaseService
     protected PostRepository $postRepository;
 
     /**
-     * @param PostRepository $postRepository
+     * @var PostOmamoriSnapshotService
      */
-    public function __construct(PostRepository $postRepository)
-    {
+    protected PostOmamoriSnapshotService $snapshotService;
+
+    /**
+     * @param PostRepository             $postRepository
+     * @param PostOmamoriSnapshotService $snapshotService
+     */
+    public function __construct(
+        PostRepository $postRepository,
+        PostOmamoriSnapshotService $snapshotService
+    ) {
         $this->postRepository = $postRepository;
+        $this->snapshotService = $snapshotService;
     }
 
     /**
@@ -84,16 +95,40 @@ class PostService extends BaseService
     /**
      * 게시글 작성
      *
+     * 규칙:
+     * - omamori_id 필수
+     * - published 오마모리만 첨부 가능
+     * - 내 오마모리만 첨부 가능
+     * - 게시 시점 오마모리 스냅샷 저장
+     * - tags는 nullable
+     *
      * @param User                 $user
      * @param array<string, mixed> $data
      * @return Post
+     *
+     * @throws ValidationException
      */
     public function store(User $user, array $data): Post
     {
         return $this->transaction(function () use ($user, $data): Post {
-            $payload = array_merge($data, [
+            $omamoriId = (int) ($data['omamori_id'] ?? 0);
+
+            if ($omamoriId < 1) {
+                throw ValidationException::withMessages([
+                    'omamori_id' => ['오마모리는 필수 항목입니다.'],
+                ]);
+            }
+
+            $omamori = $this->resolveAttachableOmamori($user, $omamoriId);
+
+            $payload = [
                 'user_id' => $user->id,
-            ]);
+                'omamori_id' => $omamori->id,
+                'title' => $data['title'],
+                'content' => $data['content'],
+                'omamori_snapshot' => $this->snapshotService->make($omamori),
+                'tags' => $data['tags'] ?? null,
+            ];
 
             /** @var Post $post */
             $post = $this->postRepository->create($payload);
@@ -107,18 +142,46 @@ class PostService extends BaseService
     /**
      * 게시글 수정
      *
+     * 규칙:
+     * - omamori_id 변경 허용
+     * - omamori_id가 변경되면 snapshot도 재생성/저장
+     * - tags는 nullable
+     *
      * @param User                 $user
      * @param int                  $postId
      * @param array<string, mixed> $data
      * @return Post
+     *
+     * @throws ValidationException
      */
     public function updateById(User $user, int $postId, array $data): Post
     {
         $post = $this->findOrFailWithRelations($postId);
         Gate::forUser($user)->authorize('update', $post);
 
-        return $this->transaction(function () use ($post, $data): Post {
-            $this->postRepository->update($post, $data);
+        return $this->transaction(function () use ($user, $post, $data): Post {
+            $omamoriId = (int) ($data['omamori_id'] ?? 0);
+
+            if ($omamoriId < 1) {
+                throw ValidationException::withMessages([
+                    'omamori_id' => ['오마모리는 필수 항목입니다.'],
+                ]);
+            }
+
+            $update = [
+                'title' => $data['title'] ?? $post->title,
+                'content' => $data['content'] ?? $post->content,
+                'tags' => $data['tags'] ?? null,
+            ];
+
+            if ((int) $post->omamori_id !== $omamoriId) {
+                $omamori = $this->resolveAttachableOmamori($user, $omamoriId);
+
+                $update['omamori_id'] = $omamori->id;
+                $update['omamori_snapshot'] = $this->snapshotService->make($omamori);
+            }
+
+            $this->postRepository->update($post, $update);
 
             $post->refresh()->load(['user', 'omamori']);
 
@@ -160,5 +223,43 @@ class PostService extends BaseService
         }
 
         return $post;
+    }
+
+    /**
+     * 게시글에 첨부 가능한 오마모리인지 검증 후 반환
+     *
+     * 규칙:
+     * - 내 오마모리만 가능
+     * - published만 가능
+     *
+     * @param User $user
+     * @param int  $omamoriId
+     * @return Omamori
+     *
+     * @throws ValidationException
+     */
+    protected function resolveAttachableOmamori(User $user, int $omamoriId): Omamori
+    {
+        $omamori = Omamori::query()->whereKey($omamoriId)->first();
+
+        if (!$omamori) {
+            throw ValidationException::withMessages([
+                'omamori_id' => ['오마모리를 찾을 수 없습니다.'],
+            ]);
+        }
+
+        if ((int) $omamori->user_id !== (int) $user->id) {
+            throw ValidationException::withMessages([
+                'omamori_id' => ['내 오마모리만 첨부할 수 있습니다.'],
+            ]);
+        }
+
+        if ($omamori->status !== Omamori::STATUS_PUBLISHED) {
+            throw ValidationException::withMessages([
+                'omamori_id' => ['published 오마모리만 첨부할 수 있습니다.'],
+            ]);
+        }
+
+        return $omamori;
     }
 }
