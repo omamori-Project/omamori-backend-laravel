@@ -6,28 +6,29 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePostRequest extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * 게시글 수정 Validation 규칙
-     *
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'title' => ['sometimes', 'required', 'string', 'max:150'],
-            'content' => ['sometimes', 'required', 'string'],
-            'omamori_id' => ['sometimes', 'nullable', 'integer', 'exists:omamoris,id'],
+            'title' => ['required', 'string', 'max:150'],
+            'content' => ['required', 'string'],
+            'omamori_id' => ['required', 'integer', 'exists:omamoris,id'],
+            'tags' => ['nullable', 'array', 'max:10'],
+            'tags.*' => ['string', 'max:20'],
         ];
     }
 
     /**
-     * Validation 에러 메시지 정의
-     *
      * @return array<string, string>
      */
     public function messages(): array
@@ -35,8 +36,12 @@ class UpdatePostRequest extends FormRequest
         return [
             'title.required' => '타이틀은 필수 항목입니다.',
             'title.max' => '타이틀은 150자를 초과할 수 없습니다.',
-            'content.required' => '내용은 필수 항목입니다.',
-            'omamori_id.exists' => '오마모리 ID가 유효하지 않습니다.',
+            'content.required' => '본문은 필수 항목입니다.',
+            'omamori_id.required' => '오마모리는 필수 항목입니다.',
+            'omamori_id.exists' => '존재하지 않는 오마모리입니다.',
+            'tags.array' => '태그 형식이 올바르지 않습니다.',
+            'tags.max' => '태그는 최대 10개까지 가능합니다.',
+            'tags.*.max' => '태그는 최대 20자까지 가능합니다.',
         ];
     }
 }
