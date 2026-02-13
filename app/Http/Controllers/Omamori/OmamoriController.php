@@ -11,6 +11,7 @@ use App\Http\Resources\Omamori\OmamoriResource;
 use App\Services\Omamori\OmamoriService;
 use App\Models\Omamori;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class OmamoriController extends Controller
 {
@@ -42,7 +43,7 @@ class OmamoriController extends Controller
     /**
      * 오마모리 생성
      * POST /api/v1/omamoris
-     *
+     * 
      * @param StoreOmamoriRequest $request
      * @return JsonResponse
      */
@@ -117,15 +118,14 @@ class OmamoriController extends Controller
      * DELETE /api/v1/omamoris/{omamori}
      *
      * @param Omamori $omamori
-     * @return JsonResponse
      */
-    public function destroy(Omamori $omamori): JsonResponse
+    public function destroy(Omamori $omamori): Response
     {
         $this->authorize('delete', $omamori);
 
         $this->omamoriService->deleteOmamori($omamori);
 
-        return $this->success(null, '오마모리가 삭제되었습니다.');
+        return response()->noContent();
     }
 
     /**

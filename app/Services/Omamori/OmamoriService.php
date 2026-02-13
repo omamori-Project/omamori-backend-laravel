@@ -8,15 +8,21 @@ use App\Services\BaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Repositories\Community\PostRepository;
 
 class OmamoriService extends BaseService
 {
     /**
      * @param OmamoriRepository $omamoriRepository
+     * @param PostRepository     $postRepository
      */
     public function __construct(
-        private OmamoriRepository $omamoriRepository
-    ) {}
+        private OmamoriRepository $omamoriRepository,
+        private PostRepository $postRepository,
+    ) {
+        $this->omamoriRepository = $omamoriRepository;
+        $this->postRepository = $postRepository;        
+    }
 
     /**
      * 내 오마모리 목록 조회
@@ -80,14 +86,23 @@ class OmamoriService extends BaseService
     }
 
     /**
-     * 오마모리 삭제
+     * 오마모리 삭제 (soft delete)
+     *
+     * 규칙:
+     * - 연결된 게시글은 숨김 처리
      *
      * @param Omamori $omamori
      * @return void
      */
     public function deleteOmamori(Omamori $omamori): void
     {
-        $this->omamoriRepository->delete($omamori);
+        $this->transaction(function () use ($omamori): void {
+            // 연결된 게시글 숨김 처리
+            $this->postRepository->hideByOmamoriId($omamori->id);
+    
+            // 오마모리 삭제
+            $this->omamoriRepository->delete($omamori);
+        });
     }
     /**
      * 오마모리를 draft 상태로 저장
@@ -104,16 +119,9 @@ class OmamoriService extends BaseService
     public function saveDraft(Omamori $omamori): Omamori
     {
         if ($omamori->status === Omamori::STATUS_PUBLISHED) {
-            throw new HttpException(
-                409,
-                '이미 발행된 오마모리는 임시저장(draft)으로 되돌릴 수 없습니다.'
-            );
+            $this->postRepository->hideByOmamoriId($omamori->id);
         }
-
-        if ($omamori->status === Omamori::STATUS_DRAFT) {
-            return $omamori->fresh();
-        }
-
+    
         return $this->omamoriRepository->setStatusDraft($omamori);
     }
 
@@ -177,4 +185,5 @@ class OmamoriService extends BaseService
             throw ValidationException::withMessages($errors);
         }
     }
+    
 }
