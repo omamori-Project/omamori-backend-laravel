@@ -16,6 +16,19 @@ class Post extends Model
         'omamori_id',
         'title',
         'content',
+        'omamori_snapshot',
+        'tags',
+        'hidden_at',
+        'like_count',
+        'comment_count',
+        'bookmark_count',
+        'view_count',
+    ];
+
+    protected $casts = [
+        'omamori_snapshot' => 'array',
+        'tags' => 'array',
+        'hidden_at' => 'datetime',
     ];
 
     public function user()
