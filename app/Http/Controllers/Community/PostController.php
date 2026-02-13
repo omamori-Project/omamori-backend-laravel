@@ -62,6 +62,12 @@ class PostController extends Controller
      *
      * POST /api/v1/posts
      *
+     * Body:
+     * - title (required)
+     * - content (required)
+     * - omamori_id (required, published + 내 소유만 허용)
+     * - tags (nullable array)
+     *
      * @param StorePostRequest $request
      * @return JsonResponse
      */
@@ -80,6 +86,12 @@ class PostController extends Controller
      *
      * PATCH /api/v1/posts/{postId}
      *
+     * Body:
+     * - title (required)
+     * - content (required)
+     * - omamori_id (required, 변경 가능 / 변경 시 snapshot 재생성)
+     * - tags (nullable array)
+     *
      * @param UpdatePostRequest $request
      * @param int               $postId
      * @return JsonResponse
@@ -88,9 +100,9 @@ class PostController extends Controller
     {
         $user = $request->user();
         $data = $request->validated();
-    
+
         $updated = $this->postService->updateById($user, $postId, $data);
-    
+
         return $this->success(new PostResource($updated));
     }
 
@@ -106,9 +118,9 @@ class PostController extends Controller
     public function destroy(Request $request, int $postId): JsonResponse
     {
         $user = $request->user();
-    
+
         $this->postService->destroyById($user, $postId);
-    
+
         return $this->noContent();
     }
 

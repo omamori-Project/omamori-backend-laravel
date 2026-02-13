@@ -9,8 +9,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class PostResource extends JsonResource
 {
     /**
-     * 게시글 리소스 변환
-     *
      * @param Request $request
      * @return array<string, mixed>
      */
@@ -27,28 +25,20 @@ class PostResource extends JsonResource
             'title' => $post->title,
             'content' => $post->content,
 
+            'omamori_snapshot' => $post->omamori_snapshot,
+            'tags' => $post->tags,
+            'hidden_at' => $post->hidden_at,
+
             'like_count' => (int) $post->like_count,
             'comment_count' => (int) $post->comment_count,
             'bookmark_count' => (int) $post->bookmark_count,
             'view_count' => (int) $post->view_count,
 
-            'user' => $post->relationLoaded('user') && $post->user !== null
-                ? [
-                    'id' => $post->user->id,
-                    'name' => $post->user->name,
-                ]
-                : null,
+            'created_at' => $post->created_at,
+            'updated_at' => $post->updated_at,
 
-            'omamori' => $post->relationLoaded('omamori') && $post->omamori !== null
-                ? [
-                    'id' => $post->omamori->id,
-                    'status' => $post->omamori->status ?? null,
-                    'published_at' => $post->omamori->published_at?->toISOString(),
-                ]
-                : null,
-
-            'created_at' => $post->created_at?->toISOString(),
-            'updated_at' => $post->updated_at?->toISOString(),
+            'user' => $this->whenLoaded('user'),
+            'omamori' => $this->whenLoaded('omamori'),
         ];
     }
 }
