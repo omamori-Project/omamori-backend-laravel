@@ -14,6 +14,9 @@ use App\Http\Controllers\Public\PublicShareController;
 use App\Http\Controllers\Omamori\OmamoriExportController;
 use App\Http\Controllers\Omamori\OmamoriDuplicateController;
 use App\Http\Controllers\Community\CommentController;
+use App\Http\Controllers\Community\PostLikeController;
+use App\Http\Controllers\Community\PostBookmarkController;
+use App\Http\Controllers\Community\MeBookmarkController;
 
 use App\Http\Controllers\Community\PostController;
 
@@ -67,6 +70,12 @@ Route::prefix('v1')->group(function () {
 
         /**
          * Omamori
+         * - POST   /api/v1/omamoris                     : 오마모리 생성
+         * - GET    /api/v1/omamoris                     : 오마모리 목록
+         * - GET    /api/v1/omamoris/{omamori}              : 오마모리 상세
+         * - PATCH  /api/v1/omamoris/{omamori}              : 오마모리 수정
+         * - PATCH  /api/v1/omamoris/{omamori}/back-message   : 오마모리 뒷면 메시지 수정
+         * - DELETE /api/v1/omamoris/{omamori}              : 오마모리 삭제
          */
         Route::prefix('omamoris')->group(function () {
 
@@ -91,8 +100,8 @@ Route::prefix('v1')->group(function () {
 
             /**
              *Share (오마모리 기준)
-             *  - POST /api/v1/omamoris/{omamori}/share
-             *  - GET  /api/v1/omamoris/{omamori}/shares
+             *  - POST /api/v1/omamoris/{omamori}/share   : 오마모리 공유 생성
+             *  - GET  /api/v1/omamoris/{omamori}/shares  : 오마모리 공유 목록
              */
             Route::post('/{omamori}/share', [OmamoriShareController::class, 'store']);
             Route::get('/{omamori}/shares', [OmamoriShareController::class, 'index']);
@@ -153,5 +162,25 @@ Route::prefix('v1')->group(function () {
         Route::prefix('me')->group(function () {
             Route::get('/comments', [CommentController::class, 'myIndex']);
         });
+
+        /**
+         * Community (Private) - likes
+         * - POST   /api/v1/posts/{postId}/likes : 게시글 좋아요 추가
+         * - DELETE /api/v1/posts/{postId}/likes : 게시글 좋아요 제거
+         * - GET    /api/v1/posts/{postId}/likes/me : 좋아요 목록
+         */
+        Route::post('/posts/{post}/likes', [PostLikeController::class, 'store']);
+        Route::delete('/posts/{post}/likes', [PostLikeController::class, 'destroy']);
+        Route::get('/posts/{post}/likes/me', [PostLikeController::class, 'me']);
+
+        /**
+         * Community (Private) - bookmarks
+         * - POST   /api/v1/posts/{postId}/bookmarks : 게시글 북마크 추가
+         * - DELETE /api/v1/posts/{postId}/bookmarks : 게시글 북마크 제거
+         * - GET    /api/v1/me/bookmarks            : 내 북마크 목록
+         */
+        Route::post('/posts/{post}/bookmarks', [PostBookmarkController::class, 'store']);
+        Route::delete('/posts/{post}/bookmarks', [PostBookmarkController::class, 'destroy']);
+        Route::get('/me/bookmarks', [MeBookmarkController::class, 'index']);        
     });
 });
