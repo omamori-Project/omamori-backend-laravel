@@ -6,6 +6,7 @@ use App\Models\Omamori;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<Post>
@@ -26,12 +27,27 @@ class PostFactory extends Factory
      */
     public function definition(): array
     {
+        $user = User::factory()->create();
+
+        $omamori = Omamori::factory()->for($user)->create([
+            'status' => 'published',
+            'published_at' => Carbon::now(),
+        ]);
+
         return [
-            'user_id' => User::factory(),
-            'omamori_id' => null,
+            'user_id' => $user->id,
+            'omamori_id' => $omamori->id,
 
             'title' => $this->faker->sentence(6),
             'content' => $this->faker->paragraphs(3, true),
+
+            'omamori_snapshot' => [
+                'id' => $omamori->id,
+                'title' => $omamori->title ?? null,
+                'status' => $omamori->status,
+            ],
+            'tags' => null,
+            'hidden_at' => null,
 
             'like_count' => 0,
             'comment_count' => 0,
@@ -49,8 +65,18 @@ class PostFactory extends Factory
     public function withOmamori(?Omamori $omamori = null): static
     {
         return $this->state(function () use ($omamori): array {
+            $target = $omamori ?? Omamori::factory()->create([
+                'status' => 'published',
+                'published_at' => Carbon::now(),
+            ]);
+
             return [
-                'omamori_id' => $omamori?->id ?? Omamori::factory(),
+                'omamori_id' => $target->id,
+                'omamori_snapshot' => [
+                    'id' => $target->id,
+                    'title' => $target->title ?? null,
+                    'status' => $target->status,
+                ],
             ];
         });
     }
@@ -63,8 +89,33 @@ class PostFactory extends Factory
      */
     public function forUser(User $user): static
     {
+        return $this->state(function () use ($user): array {
+            $omamori = Omamori::factory()->for($user)->create([
+                'status' => 'published',
+                'published_at' => Carbon::now(),
+            ]);
+
+            return [
+                'user_id' => $user->id,
+                'omamori_id' => $omamori->id,
+                'omamori_snapshot' => [
+                    'id' => $omamori->id,
+                    'title' => $omamori->title ?? null,
+                    'status' => $omamori->status,
+                ],
+            ];
+        });
+    }
+
+    /**
+     * 숨김 게시글 상태
+     *
+     * @return static
+     */
+    public function hidden(): static
+    {
         return $this->state(fn (): array => [
-            'user_id' => $user->id,
+            'hidden_at' => Carbon::now(),
         ]);
     }
 }
