@@ -63,11 +63,13 @@ class OmamoriTest extends TestCase
     public function test_store_minimal_fields(): void
     {
         $user = User::factory()->create();
+        $frame = Frame::factory()->create();
 
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/omamoris', [
             'title' => '간단한 오마모리',
+            'applied_frame_id' => $frame->id,
         ]);
 
         $response->assertStatus(201)
@@ -121,12 +123,14 @@ class OmamoriTest extends TestCase
     public function test_store_invalid_fortune_color(): void
     {
         $user = User::factory()->create();
+        $frame = Frame::factory()->create();
 
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/omamoris', [
             'title'                    => '테스트',
             'applied_fortune_color_id' => 99999,
+            'applied_frame_id'         => $frame->id,
         ]);
 
         $response->assertStatus(422)
@@ -401,17 +405,13 @@ class OmamoriTest extends TestCase
     {
         $user = User::factory()->create();
         $omamori = Omamori::factory()->create(['user_id' => $user->id]);
-
+    
         Sanctum::actingAs($user);
-
+    
         $response = $this->deleteJson("/api/v1/omamoris/{$omamori->id}");
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'message' => '오마모리가 삭제되었습니다.',
-            ]);
-
+    
+        $response->assertStatus(204);
+    
         $this->assertSoftDeleted('omamoris', [
             'id' => $omamori->id,
         ]);
@@ -420,12 +420,12 @@ class OmamoriTest extends TestCase
     /**
      * 타인 오마모리 삭제 실패 테스트 (403)
      *
-     * @return void
      */
     public function test_destroy_others_omamori_forbidden(): void
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
+
         $omamori = Omamori::factory()->create(['user_id' => $owner->id]);
 
         Sanctum::actingAs($other);
@@ -436,9 +436,8 @@ class OmamoriTest extends TestCase
     }
 
     /**
-     * 삭제 후 조회 불가 테스트
+     * 삭제 후 조회 실패 테스트 (404)
      *
-     * @return void
      */
     public function test_show_after_delete_fails(): void
     {
@@ -449,18 +448,16 @@ class OmamoriTest extends TestCase
 
         // 삭제
         $this->deleteJson("/api/v1/omamoris/{$omamori->id}")
-            ->assertStatus(200);
+            ->assertStatus(204);
 
         // 조회 시도
         $response = $this->getJson("/api/v1/omamoris/{$omamori->id}");
 
         $response->assertStatus(404);
     }
-
     /**
-     * 인증 없이 삭제 실패 테스트
+     * 인증 없을 때 삭제 401 테스트
      *
-     * @return void
      */
     public function test_destroy_unauthorized(): void
     {
