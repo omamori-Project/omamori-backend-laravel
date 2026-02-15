@@ -19,7 +19,7 @@ class UpdateOmamoriRequest extends FormRequest
             'theme'                    => ['nullable', 'string', 'max:30'],
             'size_code'                => ['nullable', 'string', 'max:10'],
             'applied_fortune_color_id' => ['sometimes', 'nullable', 'exists:fortune_colors,id'],
-            'applied_frame_id'         => ['sometimes', 'nullable', 'exists:frames,id'],
+            'applied_frame_id'         => ['sometimes', 'exists:frames,id'],
         ];
     }
 
