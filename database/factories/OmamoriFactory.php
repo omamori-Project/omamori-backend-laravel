@@ -25,7 +25,7 @@ class OmamoriFactory extends Factory
             'size_code'                => fake()->randomElement(['small', 'medium', 'large']),
             'back_message'             => null,
             'applied_fortune_color_id' => null,
-            'applied_frame_id'        => null,
+            'applied_frame_id'         => Frame::factory(),
             'preview_file_id'          => null,
             'view_count'               => 0,
             'published_at'             => null,
