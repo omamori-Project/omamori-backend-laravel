@@ -19,7 +19,7 @@ class StoreOmamoriRequest extends FormRequest
             'theme'                    => ['nullable', 'string', 'max:30'],
             'size_code'                => ['nullable', 'string', 'max:10'],
             'applied_fortune_color_id' => ['nullable', 'exists:fortune_colors,id'],
-            'applied_frame_id'         => ['nullable', 'exists:frames,id'],
+            'applied_frame_id'         => ['required', 'exists:frames,id'],
         ];
     }
 
