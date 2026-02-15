@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('back_message')->nullable()->comment('뒷면 메시지');
 
             $table->unsignedBigInteger('applied_fortune_color_id')->nullable()->comment('적용된 포춘 컬러');
-            $table->unsignedBigInteger('applied_frame_id')->nullable()->comment('적용된 프레임');
+            $table->unsignedBigInteger('applied_frame_id')->comment('적용된 프레임');
             $table->unsignedBigInteger('preview_file_id')->nullable()->comment('미리보기 이미지');
 
             $table->integer('view_count')->default(0)->comment('조회수');
