@@ -13,7 +13,6 @@ return new class extends Migration
             $table->bigIncrements('id')->comment('포춘 컬러 PK');
 
             $table->string('code', 60)
-                ->unique()
                 ->comment('고유 코드 (seed 기준)');
 
             $table->string('name', 60)
@@ -49,14 +48,45 @@ return new class extends Migration
             $table->timestampTz('updated_at')
                 ->useCurrent()
                 ->comment('수정 시각');
+
+            $table->timestampTz('deleted_at')
+                ->nullable()
+                ->comment('소프트 삭제 시각');
         });
 
         DB::statement("comment on table fortune_colors is '포춘 컬러 테이블'");
 
+        DB::statement("create unique index fortune_colors_code_unique on fortune_colors(code) where deleted_at is null");
+        DB::statement("create index idx_fortune_colors_deleted_at on fortune_colors(deleted_at)");
+
+        /**
+         * users 테이블에 웹 테마 적용용 컬럼 추가 
+         */
+        Schema::table('users', function (Blueprint $table) {
+            if (!Schema::hasColumn('users', 'applied_fortune_color_id')) {
+                $table->unsignedBigInteger('applied_fortune_color_id')
+                    ->nullable()
+                    ->after('last_login_at')
+                    ->comment('웹 테마 적용 행운 컬러');
+
+                $table->foreign('applied_fortune_color_id')
+                    ->references('id')
+                    ->on('fortune_colors')
+                    ->nullOnDelete();
+            }
+        });
     }
-    
+
     public function down(): void
     {
+        // FK/컬럼 먼저 제거 후 fortune_colors drop
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'applied_fortune_color_id')) {
+                $table->dropForeign(['applied_fortune_color_id']);
+                $table->dropColumn('applied_fortune_color_id');
+            }
+        });
+
         Schema::dropIfExists('fortune_colors');
     }
 };
