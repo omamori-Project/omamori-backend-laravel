@@ -24,10 +24,13 @@ class OmamoriStatusTest extends TestCase
     public function test_save_draft_success_when_already_draft(): void
     {
         $user = User::factory()->create();
+        $frame = Frame::factory()->create();
+
         $omamori = Omamori::factory()->create([
             'user_id' => $user->id,
             'status' => 'draft',
             'published_at' => null,
+            'applied_frame_id' => $frame->id,
         ]);
 
         Sanctum::actingAs($user);
@@ -55,10 +58,12 @@ class OmamoriStatusTest extends TestCase
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
+        $frame = Frame::factory()->create();
 
         $omamori = Omamori::factory()->create([
             'user_id' => $owner->id,
             'status' => 'draft',
+            'applied_frame_id' => $frame->id,
         ]);
 
         Sanctum::actingAs($other);
@@ -75,8 +80,11 @@ class OmamoriStatusTest extends TestCase
      */
     public function test_save_draft_unauthorized(): void
     {
+        $frame = Frame::factory()->create();
+
         $omamori = Omamori::factory()->create([
             'status' => 'draft',
+            'applied_frame_id' => $frame->id,
         ]);
 
         $response = $this->postJson("/api/v1/omamoris/{$omamori->id}/save-draft");
@@ -85,26 +93,35 @@ class OmamoriStatusTest extends TestCase
     }
 
     /**
-     * 임시저장 실패: published -> draft 되돌리기 금지 (409)
+     * 임시저장 성공: published → draft (POST /api/v1/omamoris/{id}/save-draft)
      *
      * @return void
      */
     public function test_save_draft_conflict_when_published(): void
     {
         $user = User::factory()->create();
-
-        // published() state가 user_id를 덮어쓸 가능성이 있어 user_id를 명시한다.
+        $frame = Frame::factory()->create();
+    
         $omamori = Omamori::factory()->create([
             'user_id' => $user->id,
             'status' => 'published',
             'published_at' => now(),
+            'applied_frame_id' => $frame->id,
         ]);
-
+    
         Sanctum::actingAs($user);
-
+    
         $response = $this->postJson("/api/v1/omamoris/{$omamori->id}/save-draft");
-
-        $response->assertStatus(409);
+    
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', 'draft')
+            ->assertJsonPath('data.published_at', null);
+    
+        $this->assertDatabaseHas('omamoris', [
+            'id' => $omamori->id,
+            'status' => 'draft',
+            'published_at' => null,
+        ]);
     }
 
     /**
@@ -163,12 +180,13 @@ class OmamoriStatusTest extends TestCase
     public function test_publish_idempotent_when_already_published(): void
     {
         $user = User::factory()->create();
+        $frame = Frame::factory()->create();
 
-        // published() state가 user_id를 덮어쓸 가능성이 있어 user_id를 명시한다.
         $omamori = Omamori::factory()->create([
             'user_id' => $user->id,
             'status' => 'published',
             'published_at' => now(),
+            'applied_frame_id' => $frame->id,
         ]);
 
         Sanctum::actingAs($user);
@@ -221,22 +239,22 @@ class OmamoriStatusTest extends TestCase
     /**
      * 발행 실패: 필수 메타 누락 시 422
      * - applied_fortune_color_id
-     * - applied_frame_id
      *
      * @return void
      */
     public function test_publish_should_422_when_required_meta_missing(): void
     {
         $user = User::factory()->create();
+        $frame = Frame::factory()->create();
 
         $omamori = Omamori::factory()->create([
             'user_id' => $user->id,
             'status' => 'draft',
             'applied_fortune_color_id' => null,
-            'applied_frame_id' => null,
+            'applied_frame_id' => $frame->id,
         ]);
 
-        // 요소는 충족(요소가 없어서 실패하는 케이스랑 분리)
+        // 요소는 충족
         OmamoriElement::factory()->create([
             'omamori_id' => $omamori->id,
             'type' => 'stamp',
@@ -250,8 +268,7 @@ class OmamoriStatusTest extends TestCase
         $response = $this->postJson("/api/v1/omamoris/{$omamori->id}/publish");
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors('applied_fortune_color_id')
-            ->assertJsonValidationErrors('applied_frame_id');
+            ->assertJsonValidationErrors('applied_fortune_color_id');
     }
 
     /**
@@ -296,8 +313,11 @@ class OmamoriStatusTest extends TestCase
      */
     public function test_publish_unauthorized(): void
     {
+        $frame = Frame::factory()->create();
+
         $omamori = Omamori::factory()->create([
             'status' => 'draft',
+            'applied_frame_id' => $frame->id,
         ]);
 
         $response = $this->postJson("/api/v1/omamoris/{$omamori->id}/publish");
