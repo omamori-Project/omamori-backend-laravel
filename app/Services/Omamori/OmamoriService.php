@@ -9,6 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Repositories\Community\PostRepository;
+use App\Models\Frame;
 
 class OmamoriService extends BaseService
 {
@@ -58,6 +59,19 @@ class OmamoriService extends BaseService
      */
     public function createOmamori(int $userId, array $data): Omamori
     {
+        if (empty($data['applied_frame_id'])) {
+            $defaultFrameId = Frame::query()
+                ->where('is_default', true)
+                ->where('is_active', true)
+                ->value('id');
+
+            if (!$defaultFrameId) {
+                throw new HttpException(500, '기본 프레임이 설정되어 있지 않습니다.');
+            }
+
+            $data['applied_frame_id'] = $defaultFrameId;
+        }
+
         return $this->omamoriRepository->createOmamori($userId, $data);
     }
 
