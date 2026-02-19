@@ -43,4 +43,25 @@ class FrameFactory extends Factory
             'is_active' => true,
         ]);
     }
+    /**
+     * 비활성 프레임 상태
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn () => [
+            'is_active' => false,
+            'is_default' => false,
+        ]);
+    }
+    
+    /**
+     * 활성 프레임 상태(선택)
+     */
+    public function active(): static
+    {
+        return $this->state(fn () => [
+            'is_active' => true,
+        ]);
+    }
+    
 }
