@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Frame;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Frame>
+ */
 class FrameFactory extends Factory
 {
     protected $model = Frame::class;
@@ -21,8 +26,10 @@ class FrameFactory extends Factory
             'preview_path'  => 'frames/' . fake()->unique()->slug(2) . '_preview.png',
             'is_default'    => false,
             'asset_file_id' => null,
-            'is_active'     => true,
-            'meta'          => [],
+            'meta' => [
+                'type' => $this->faker->randomElement(['wood', 'metal', 'paper']),
+            ],
+            'is_active' => true,
         ];
     }
 

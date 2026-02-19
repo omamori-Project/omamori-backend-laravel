@@ -16,7 +16,6 @@ return new class extends Migration
                 ->comment('프레임 이름');
 
             $table->string('frame_key', 60)
-                ->unique()
                 ->comment('프레임 식별 키');
 
             $table->string('preview_path', 255)

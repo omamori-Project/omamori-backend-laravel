@@ -10,6 +10,10 @@ use App\Policies\OmamoriPolicy;
 use App\Policies\SharePolicy;
 use App\Policies\PostPolicy;
 use App\Policies\CommentPolicy;
+use App\Models\FortuneColor;
+use App\Policies\FortuneColorPolicy;
+use App\Models\Frame;
+use App\Policies\FramePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -19,6 +23,8 @@ class AuthServiceProvider extends ServiceProvider
         Share::class   => SharePolicy::class,
         Post::class => PostPolicy::class,
         Comment::class => CommentPolicy::class,
+        FortuneColor::class => FortuneColorPolicy::class,
+        Frame::class => FramePolicy::class,
     ];
 
     public function boot(): void
