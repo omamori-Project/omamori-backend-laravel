@@ -18,9 +18,13 @@ return new class extends Migration
             $table->string('frame_key', 60)
                 ->comment('프레임 식별 키');
 
-            $table->text('preview_url')
+            $table->string('preview_path', 255)
                 ->nullable()
-                ->comment('미리보기 이미지 URL');
+                ->comment('미리보기 이미지 경로(스토리지 내부 경로)');
+
+            $table->boolean('is_default')
+                ->default(false)
+                ->comment('기본 프레임 여부');
 
             $table->unsignedBigInteger('asset_file_id')
                 ->nullable()
@@ -36,20 +40,21 @@ return new class extends Migration
 
             $table->timestampTz('created_at')->useCurrent()->comment('생성 시각');
             $table->timestampTz('updated_at')->useCurrent()->comment('수정 시각');
-            $table->timestampTz('deleted_at')->nullable()->comment('소프트 삭제 시각');
+            $table->timestampTz('deleted_at')->nullable()->comment('삭제 시각(soft delete)');
+
+            $table->index('deleted_at');
 
             $table->foreign('asset_file_id')->references('id')->on('files');
         });
 
-        DB::statement("comment on table frames is '오마모리 프레임'");
+        DB::statement("create unique index if not exists frames_unique_default on frames(is_default) where is_default = true");
 
-        DB::statement("create unique index frames_frame_key_unique on frames(frame_key) where deleted_at is null");
-        DB::statement("create index idx_frames_deleted_at on frames(deleted_at)");
-        DB::statement("create index idx_frames_asset_file_id on frames(asset_file_id)");
+        DB::statement("comment on table frames is '오마모리 프레임'");
     }
 
     public function down(): void
     {
+        DB::statement("drop index if exists frames_unique_default");
         Schema::dropIfExists('frames');
     }
 };

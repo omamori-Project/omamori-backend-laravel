@@ -742,4 +742,30 @@ class OmamoriTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_store_without_frame_applies_default_frame(): void
+{
+    $user = User::factory()->create();
+
+    $defaultFrame = Frame::factory()->default()->create();
+
+    Sanctum::actingAs($user);
+
+    $response = $this->postJson('/api/v1/omamoris', [
+        'title' => '기본 프레임 자동 적용',
+        // applied_frame_id intentionally omitted
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJsonPath('data.title', '기본 프레임 자동 적용')
+        ->assertJsonPath('data.status', 'draft')
+        ->assertJsonPath('data.frame.id', $defaultFrame->id);
+
+    $this->assertDatabaseHas('omamoris', [
+        'user_id' => $user->id,
+        'title' => '기본 프레임 자동 적용',
+        'applied_frame_id' => $defaultFrame->id,
+    ]);
+}
+
 }

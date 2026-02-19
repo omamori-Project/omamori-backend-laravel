@@ -4,11 +4,13 @@ namespace Database\Factories;
 
 use App\Models\FortuneColor;
 use App\Models\Frame;
+use App\Models\Omamori;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OmamoriFactory extends Factory
 {
+    protected $model = Omamori::class;
     /**
      * 기본 상태 정의
      *
@@ -31,7 +33,6 @@ class OmamoriFactory extends Factory
             'published_at'             => null,
         ];
     }
-
     /**
      * published 상태
      *
@@ -44,7 +45,6 @@ class OmamoriFactory extends Factory
             'published_at' => now(),
         ]);
     }
-
     /**
      * 행운 색상 적용
      *
@@ -61,11 +61,20 @@ class OmamoriFactory extends Factory
      * 프레임 적용
      *
      * @return static
-     */
-    public function withFrame(): static
+     */    public function withFrame(): static
     {
         return $this->state(fn () => [
             'applied_frame_id' => Frame::factory(),
+        ]);
+    }
+
+    /**
+     * 기본 프레임 적용 상태
+     */
+    public function withDefaultFrame(): static
+    {
+        return $this->state(fn () => [
+            'applied_frame_id' => Frame::factory()->default(),
         ]);
     }
 }

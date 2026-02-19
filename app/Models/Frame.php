@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
+use App\Models\File;
 
 /**
  * @property int $id
@@ -32,26 +35,33 @@ class Frame extends Model
     protected $fillable = [
         'name',
         'frame_key',
-        'preview_url',
+        'preview_path',
+        'is_default',
         'asset_file_id',
         'is_active',
         'meta',
     ];
 
-    /**
-     * @var array<string, string>
-     */
+    protected $appends = [
+        'preview_url',
+    ];
+
     protected $casts = [
         'meta' => 'array',
         'is_active' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
-    /**
-     * 프레임 원본 파일
-     *
-     * @return BelongsTo
-     */
-    public function assetFile(): BelongsTo
+    public function getPreviewUrlAttribute(): ?string
+    {
+        if (empty($this->preview_path)) {
+            return null;
+        }
+
+        return Storage::url($this->preview_path);
+    }
+
+    public function assetFile()
     {
         return $this->belongsTo(File::class, 'asset_file_id');
     }
