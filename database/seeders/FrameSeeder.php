@@ -13,8 +13,9 @@ class FrameSeeder extends Seeder
             [
                 'name' => '전통 목재 프레임',
                 'frame_key' => 'traditional_wood',
-                'preview_url' => '/assets/frames/traditional_wood_preview.png',
-                'asset_file_id' => null, // 실제로는 files 테이블 참조
+                'preview_path' => 'frames/traditional_wood_preview.png',
+                'is_default' => true,
+                'asset_file_id' => null, 
                 'is_active' => true,
                 'meta' => json_encode([
                     'description' => '일본 전통 목재 느낌의 프레임',
@@ -27,7 +28,8 @@ class FrameSeeder extends Seeder
             [
                 'name' => '금박 프레임',
                 'frame_key' => 'gold_leaf',
-                'preview_url' => '/assets/frames/gold_leaf_preview.png',
+                'preview_path' => 'frames/gold_leaf_preview.png',
+                'is_default' => false,
                 'asset_file_id' => null,
                 'is_active' => true,
                 'meta' => json_encode([
@@ -39,65 +41,73 @@ class FrameSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => '벚꽃 프레임',
-                'frame_key' => 'sakura',
-                'preview_url' => '/assets/frames/sakura_preview.png',
+                'name' => '은하수 프레임',
+                'frame_key' => 'silver_stars',
+                'preview_path' => 'frames/silver_stars_preview.png',
+                'is_default' => false,
                 'asset_file_id' => null,
                 'is_active' => true,
                 'meta' => json_encode([
-                    'description' => '봄의 벚꽃이 피어나는 프레임',
-                    'style' => 'seasonal',
+                    'description' => '반짝이는 별 장식 프레임',
+                    'style' => 'fantasy',
                     'border_width' => 12,
-                    'season' => 'spring',
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => '단풍 프레임',
-                'frame_key' => 'autumn_leaves',
-                'preview_url' => '/assets/frames/autumn_leaves_preview.png',
+                'name' => '핑크 리본 프레임',
+                'frame_key' => 'pink_ribbon',
+                'preview_path' => 'frames/pink_ribbon_preview.png',
+                'is_default' => false,
                 'asset_file_id' => null,
                 'is_active' => true,
                 'meta' => json_encode([
-                    'description' => '가을 단풍잎이 장식된 프레임',
-                    'style' => 'seasonal',
-                    'border_width' => 12,
-                    'season' => 'autumn',
+                    'description' => '귀여운 리본 스타일 프레임',
+                    'style' => 'cute',
+                    'border_width' => 10,
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => '심플 블랙 프레임',
-                'frame_key' => 'simple_black',
-                'preview_url' => '/assets/frames/simple_black_preview.png',
+                'name' => '푸른 물결 프레임',
+                'frame_key' => 'blue_wave',
+                'preview_path' => 'frames/blue_wave_preview.png',
+                'is_default' => false,
                 'asset_file_id' => null,
                 'is_active' => true,
                 'meta' => json_encode([
-                    'description' => '깔끔한 검은색 테두리 프레임',
-                    'style' => 'modern',
-                    'border_width' => 5,
+                    'description' => '차분한 물결 무늬 프레임',
+                    'style' => 'calm',
+                    'border_width' => 9,
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => '심플 화이트 프레임',
-                'frame_key' => 'simple_white',
-                'preview_url' => '/assets/frames/simple_white_preview.png',
+                'name' => '초록 잎사귀 프레임',
+                'frame_key' => 'green_leaf',
+                'preview_path' => 'frames/green_leaf_preview.png',
+                'is_default' => false,
                 'asset_file_id' => null,
                 'is_active' => true,
                 'meta' => json_encode([
-                    'description' => '깔끔한 흰색 테두리 프레임',
-                    'style' => 'modern',
-                    'border_width' => 5,
+                    'description' => '싱그러운 잎사귀 느낌의 프레임',
+                    'style' => 'nature',
+                    'border_width' => 8,
                 ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ];
 
-        DB::table('frames')->insert($frames);
+        // upsert: frame_key 기준
+        foreach ($frames as $frame) {
+            DB::table('frames')->updateOrInsert(
+                ['frame_key' => $frame['frame_key']],
+                $frame
+            );
+        }
     }
 }
