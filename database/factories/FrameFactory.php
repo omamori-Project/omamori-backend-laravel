@@ -43,4 +43,5 @@ class FrameFactory extends Factory
             'is_active' => true,
         ]);
     }
+    
 }
