@@ -28,6 +28,8 @@ use App\Http\Controllers\Frame\FrameController;
 use App\Http\Controllers\Frame\OmamoriFrameController;
 use App\Http\Controllers\Admin\FrameAdminController;
 
+use App\Http\Controllers\Stamp\StampController;
+
 Route::prefix('v1')->group(function () {
 
     /**
@@ -97,6 +99,12 @@ Route::prefix('v1')->group(function () {
         Route::patch('/me', [MeController::class, 'update']);
         Route::delete('/me', [MeController::class, 'destroy']);
         Route::get('/me/identities', [MeController::class, 'identities']);
+
+        /**
+         * Stamp 
+         * - GET /api/v1/stamps : 스탬프 목록 
+         */
+        Route::get('/stamps', [StampController::class, 'index']);
 
         /**
          * Me - Theme (행운컬러 적용/해제)
