@@ -20,7 +20,6 @@ class OmamoriResource extends JsonResource
             'view_count'   => $this->view_count,
             'published_at' => $this->published_at?->toISOString(),
 
-            // 관계 데이터
             'fortune_color' => $this->whenLoaded('fortuneColor', fn () => [
                 'id'            => $this->fortuneColor->id,
                 'code'          => $this->fortuneColor->code,
@@ -36,7 +35,9 @@ class OmamoriResource extends JsonResource
                 'preview_url' => $this->frame->preview_url,
             ]),
 
-            'elements' => $this->whenLoaded('elements'),
+            'elements' => $this->whenLoaded('elements', fn () =>
+                OmamoriElementResource::collection($this->elements)
+            ),
 
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
