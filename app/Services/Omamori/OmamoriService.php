@@ -180,10 +180,6 @@ class OmamoriService extends BaseService
     {
         $errors = [];
 
-        if (empty($omamori->applied_fortune_color_id)) {
-            $errors['applied_fortune_color_id'][] = '포춘 컬러를 선택해야 발행할 수 있습니다.';
-        }
-
         if (empty($omamori->applied_frame_id)) {
             $errors['applied_frame_id'][] = '프레임을 선택해야 발행할 수 있습니다.';
         }
